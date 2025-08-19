@@ -1,9 +1,11 @@
 package com.jiralite.backend.controller;
 
 import com.jiralite.backend.dto.RegisterRequest;
+import com.jiralite.backend.dto.ApiResponse;
 import com.jiralite.backend.model.User;
 import com.jiralite.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,18 +19,29 @@ public class AuthController {
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @PostMapping("/register")
-    public User register(@RequestBody RegisterRequest request) {
-        
-        String encodedPassword = passwordEncoder.encode(request.getPassword());
+    public ApiResponse<User> register(@RequestBody RegisterRequest request) {
+        try {
+            // Encrypt password
+            String encodedPassword = passwordEncoder.encode(request.getPassword());
 
-        User user = new User();
-        user.setOrgId(request.getOrgId());
-        user.setEmail(request.getEmail());
-        user.setPasswordHash(encodedPassword);
-        user.setFullName(request.getFullName());
-        user.setDesignation(request.getDesignation());
-        user.setIsActive(true);
+            User user = new User();
+            user.setOrgId(request.getOrgId());
+            user.setEmail(request.getEmail().trim().toLowerCase());
+            user.setPasswordHash(encodedPassword);
+            user.setFullName(request.getFullName());
+            user.setDesignation(request.getDesignation());
+            user.setIsActive(true);
 
-        return userRepository.save(user);
+            User savedUser = userRepository.save(user);
+
+            return new ApiResponse<>("Y", "User registered successfully", savedUser);
+
+        } catch (DataIntegrityViolationException ex) {
+            // handles unique constraint violation (duplicate email/org)
+            return new ApiResponse<>("N", "User with this email already exists in the organization", null);
+        } catch (Exception ex) {
+            // handles any other unexpected error
+            return new ApiResponse<>("N", "Error occurred: " + ex.getMessage(), null);
+        }
     }
 }
