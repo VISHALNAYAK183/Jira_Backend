@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jiralite.backend.model.Organization;
@@ -53,35 +54,35 @@ public class DashboardController {
     }
 
 
-    @GetMapping("/projects/{userId}")
-    public ResponseEntity<?> getUserProjects(@PathVariable UUID userId) {
-        Optional<User> userOpt = userRepository.findById(userId);
+      @GetMapping("/org/{orgId}/projects")
+      public ResponseEntity<?> getProjectsByOrganization(@PathVariable UUID orgId) {
 
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of(
-                "status", "N",
-                "error", "User not found"
-            ));
-        }
+          Optional<Organization> orgOpt = organizationRepository.findById(orgId);
 
-        User user = userOpt.get();
+          if (orgOpt.isEmpty()) {
+              return ResponseEntity.badRequest().body(Map.of(
+                  "status", "N",
+                  "error", "Organization not found"
+              ));
+          }
 
-        UUID orgId = user.getId();
+          List<Project> projects = projectRepository.findByOrganizationId(orgId);
 
-        Optional<Organization> orgOpt = organizationRepository.findById(orgId);
-        if (orgOpt.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of(
-                "status", "N",
-                "error", "Organization not found"
-            ));
-        }
+          if (projects.isEmpty()) {
+              return ResponseEntity.ok(Map.of(
+                  "status", "N",
+                  "message", "No projects found for this organization",
+                  "projects", List.of()
+              ));
+          }
 
-        List<Project> projects = projectRepository.findByOrganizationId(orgId);
+          return ResponseEntity.ok(Map.of(
+              "status", "Y",
+              "message", "Projects retrieved successfully",
+              "organization", orgOpt.get().getName(),
+              "orgId", orgId,
+              "projects", projects
+          ));
+      }
 
-        return ResponseEntity.ok(Map.of(
-            "status", "Y",
-            "organization", orgOpt.get().getName(),
-            "projects", projects
-        ));
-    }
 }
