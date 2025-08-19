@@ -1,10 +1,6 @@
 package com.jiralite.backend.model;
 
 import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import java.time.Instant;
 import java.util.UUID;
 
@@ -18,46 +14,50 @@ public class User {
     @GeneratedValue
     private UUID id;
 
-    @Column(name = "org_id", nullable = false)
-    private UUID orgId;
+    @ManyToOne
+    @JoinColumn(name = "org_id", nullable = false)   // Foreign key to organizations.id
+    private Organization organization;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = false)
     private String email;
 
     @Column(name = "password_hash", nullable = false)
-    @JsonIgnore
     private String passwordHash;
 
     @Column(name = "full_name", nullable = false)
     private String fullName;
 
-    @Column(name = "designation", nullable = false)
+    @Column(nullable = false)
     private String designation;
 
     @Column(name = "is_active")
     private Boolean isActive = true;
 
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
+    @Column(name = "created_at", updatable = false, insertable = false,
+            columnDefinition = "TIMESTAMPTZ DEFAULT now()")
     private Instant createdAt;
-    
+
+    // Getters and Setters
     public UUID getId() {
         return id;
     }
+
     public void setId(UUID id) {
         this.id = id;
     }
 
-    public UUID getOrgId() {
-        return orgId;
+    public Organization getOrganization() {
+        return organization;
     }
-    public void setOrgId(UUID orgId) {
-        this.orgId = orgId;
+
+    public void setOrganization(Organization organization) {
+        this.organization = organization;
     }
 
     public String getEmail() {
         return email;
     }
+
     public void setEmail(String email) {
         this.email = email;
     }
@@ -65,6 +65,7 @@ public class User {
     public String getPasswordHash() {
         return passwordHash;
     }
+
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
     }
@@ -72,6 +73,7 @@ public class User {
     public String getFullName() {
         return fullName;
     }
+
     public void setFullName(String fullName) {
         this.fullName = fullName;
     }
@@ -79,6 +81,7 @@ public class User {
     public String getDesignation() {
         return designation;
     }
+
     public void setDesignation(String designation) {
         this.designation = designation;
     }
@@ -86,14 +89,12 @@ public class User {
     public Boolean getIsActive() {
         return isActive;
     }
-    public void setIsActive(Boolean active) {
-        isActive = active;
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
     }
 
     public Instant getCreatedAt() {
         return createdAt;
-    }
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
     }
 }
