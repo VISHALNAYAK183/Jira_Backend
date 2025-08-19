@@ -9,15 +9,12 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable()) // disable CSRF for APIs
+            .csrf(csrf -> csrf.disable())  // disable CSRF for testing
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/register", "/auth/login").permitAll() // allow register + login
-                .anyRequest().authenticated() // protect everything else
-            )
-            .httpBasic(httpBasic -> {}); // simple login for now (will replace with JWT later)
-
+                .anyRequest().permitAll()  // allow all requests
+            );
         return http.build();
     }
 }
