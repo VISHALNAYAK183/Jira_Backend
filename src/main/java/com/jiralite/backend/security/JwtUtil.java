@@ -1,44 +1,57 @@
 package com.jiralite.backend.security;
 
-import java.security.Key;
-
-import java.util.*;
-
-import org.springframework.stereotype.Component;
-
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.crypto.SecretKey;
 
 @Component
 public class JwtUtil {
-  private final Key key =Keys.secretKeyFor(SignatureAlgorithm.HS256);
-  private final long EXPIRATION_TIME=1000 * 60 * 60;
 
-  public String generateToken(String email, String orgId, String designation, String fullName){
-    Map<String, Object>claims=new HashMap<>();
-    claims.put("orgId",orgId);
-    claims.put("designation",designation);
-    claims.put("fullName",fullName);
+    @Value("${jwt.secret}")  // get secret from application.properties
+    private String secret;
 
-     return Jwts.builder()
+    @Value("${jwt.expiration}") // expiration time (ms)
+    private long EXPIRATION_TIME;
+
+     private SecretKey getSigningKey() {
+        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    }
+
+    public String generateToken(String email, String orgId, String designation, String fullName) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("orgId", orgId);
+        claims.put("designation", designation);
+        claims.put("fullName", fullName);
+
+        return Jwts.builder()
                 .setClaims(claims)
-                .setSubject(email) // Subject is still email
+                .setSubject(email) // subject = email
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .signWith(key)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
+
     public Claims extractClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(key)
+                .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
     }
 
-     public String extractEmail(String token) {
+    public String extractEmail(String token) {
         return extractClaims(token).getSubject();
     }
 
