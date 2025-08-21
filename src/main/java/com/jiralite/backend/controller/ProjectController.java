@@ -35,7 +35,7 @@ public class ProjectController {
             String jwt = token.replace("Bearer ", "");
             String email = jwtUtil.extractEmail(jwt);
 
-            // Get logged in user
+          
             Optional<User> userOpt = userRepository.findByEmail(email);
             if (userOpt.isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("status", "N", "error", "User not found"));
@@ -43,7 +43,7 @@ public class ProjectController {
 
             User creator = userOpt.get();
 
-            // Check if user is OrgAdmin
+          
             if (!"OrgAdmin".equalsIgnoreCase(creator.getDesignation())) {
                 return ResponseEntity.status(403).body(Map.of("status", "N", "error", "Only OrgAdmin can create projects"));
             }

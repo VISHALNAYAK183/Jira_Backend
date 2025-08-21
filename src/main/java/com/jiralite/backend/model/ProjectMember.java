@@ -20,9 +20,7 @@ public class ProjectMember {
     private User user;
 
     @Column(nullable = false)
-    private String role;  // "Developer" or "Tester"
-
-    // Getters & Setters
+    private String role;  
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
 

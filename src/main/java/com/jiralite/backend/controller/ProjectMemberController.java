@@ -32,7 +32,7 @@ public ResponseEntity<?> assignMemberToProject(
         @RequestParam String role,
         @RequestHeader("Authorization") String authHeader) {
 
-    // 1. Extract manager info from token (optional: ensure only MANAGER can assign)
+  
     String token = authHeader.replace("Bearer ", "");
     String designation = jwtUtil.extractDesignation(token);
     if (!"manager".equalsIgnoreCase(designation)) {
@@ -42,7 +42,7 @@ public ResponseEntity<?> assignMemberToProject(
         ));
     }
 
-    // 2. Get project
+  
     Optional<Project> projectOpt = projectRepository.findById(projectId);
     if (projectOpt.isEmpty()) {
         return ResponseEntity.badRequest().body(Map.of(
@@ -52,7 +52,7 @@ public ResponseEntity<?> assignMemberToProject(
     }
     Project project = projectOpt.get();
 
-    // 3. Get user
+
     Optional<User> userOpt = userRepository.findById(userId);
     if (userOpt.isEmpty()) {
         return ResponseEntity.badRequest().body(Map.of(
@@ -62,7 +62,7 @@ public ResponseEntity<?> assignMemberToProject(
     }
     User user = userOpt.get();
 
-    // 4. Validate that both belong to same organization
+   
     if (!user.getOrganization().getId().equals(project.getOrganization().getId())) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
             "status", "N",
@@ -70,7 +70,7 @@ public ResponseEntity<?> assignMemberToProject(
         ));
     }
 
-    // 5. Save in project_members
+    
     ProjectMember member = new ProjectMember();
     member.setProject(project);
     member.setUser(user);
@@ -87,7 +87,7 @@ public ResponseEntity<?> assignMemberToProject(
 }
 
 
-    // 2️⃣ Get all members of a project
+
     @GetMapping("/{projectId}/members")
     public ResponseEntity<?> getProjectMembers(@PathVariable UUID projectId) {
         List<ProjectMember> members = projectMemberRepository.findByProjectId(projectId);

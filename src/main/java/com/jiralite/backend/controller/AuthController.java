@@ -40,7 +40,7 @@ public class AuthController {
             if(orgOpt.isEmpty()){
                 return new ApiResponse<>("N","Organization Not found",null);
             }
-            // Encrypt password
+            
             String encodedPassword = passwordEncoder.encode(request.getPassword());
 
             User user = new User();
@@ -57,10 +57,10 @@ public class AuthController {
             return new ApiResponse<>("Y", "User registered successfully", savedUser);
 
         } catch (DataIntegrityViolationException ex) {
-            // handles unique constraint violation (duplicate email/org)
+           
             return new ApiResponse<>("N", "User with this email already exists in the organization", null);
         } catch (Exception ex) {
-            // handles any other unexpected error
+            
             return new ApiResponse<>("N", "Error occurred: " + ex.getMessage(), null);
         }
     }
@@ -85,7 +85,7 @@ public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         ));
     }
 
-    // Generate JWT
+   
     String token = jwtUtil.generateToken(
     user.getEmail(),
     user.getOrganization().getId().toString(),

@@ -15,7 +15,7 @@ public class User {
     private UUID id;
 
     @ManyToOne
-    @JoinColumn(name = "org_id", nullable = false)   // Foreign key to organizations.id
+    @JoinColumn(name = "org_id", nullable = false)   
     private Organization organization;
 
     @Column(nullable = false, unique = false)
