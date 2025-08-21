@@ -14,19 +14,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.crypto.SecretKey;
-
 @Component
 public class JwtUtil {
 
-    @Value("${jwt.secret}")  // get secret from application.properties
-    private String secret;
-
-    @Value("${jwt.expiration}") // expiration time (ms)
-    private long EXPIRATION_TIME;
-
-     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-    }
+    private static final String SECRET = "mysupersecretkeymysupersecretkeymysupersecretkey!";
+    private final Key key = Keys.hmacShaKeyFor(SECRET.getBytes());
+    private final long EXPIRATION_TIME = 1000 * 60 * 60; // 1 hour
 
     public String generateToken(String email, String orgId, String designation, String fullName) {
         Map<String, Object> claims = new HashMap<>();
@@ -36,38 +29,24 @@ public class JwtUtil {
 
         return Jwts.builder()
                 .setClaims(claims)
-                .setSubject(email) // subject = email
-                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setSubject(email)
+                .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .signWith(key)
                 .compact();
     }
 
     public Claims extractClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
+                .setSigningKey(key)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
     }
 
-    public String extractEmail(String token) {
-        return extractClaims(token).getSubject();
-    }
-
-    public String extractOrgId(String token) {
-        return (String) extractClaims(token).get("orgId");
-    }
-
-    public String extractDesignation(String token) {
-        return (String) extractClaims(token).get("designation");
-    }
-
-    public String extractFullName(String token) {
-        return (String) extractClaims(token).get("fullName");
-    }
-
-    public boolean isTokenExpired(String token) {
-        return extractClaims(token).getExpiration().before(new Date());
-    }
+    public String extractEmail(String token) { return extractClaims(token).getSubject(); }
+    public String extractOrgId(String token) { return (String) extractClaims(token).get("orgId"); }
+    public String extractDesignation(String token) { return (String) extractClaims(token).get("designation"); }
+    public String extractFullName(String token) { return (String) extractClaims(token).get("fullName"); }
+    public boolean isTokenExpired(String token) { return extractClaims(token).getExpiration().before(new Date()); }
 }
