@@ -2,6 +2,7 @@ package com.jiralite.backend.service;
 
 import com.jiralite.backend.model.Task;
 import com.jiralite.backend.model.TaskStatus;
+import com.jiralite.backend.model.User;
 import com.jiralite.backend.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,12 +19,15 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
-    public Task updateTaskStatus(UUID taskId, String status) {
-        Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+   public Task updateTaskStatus(UUID taskId, String status, User user) {
+        Task task = taskRepository.findById(taskId).orElseThrow();
 
-  
-        task.setStatus(TaskStatus.valueOf(status.toUpperCase()));  
+        if (!task.getAssignedTo().getId().equals(user.getId())) {
+            throw new RuntimeException("Only the assigned user can update this task");
+        }
+
+        TaskStatus newStatus = TaskStatus.valueOf(status.toUpperCase());
+        task.setStatus(newStatus);
 
         return taskRepository.save(task);
     }

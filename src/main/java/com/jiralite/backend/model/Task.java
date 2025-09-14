@@ -13,20 +13,22 @@ public class Task {
     private String description;
 
     @Enumerated(EnumType.STRING)
-    private TaskStatus status = TaskStatus.PENDING; // PENDING, ONGOING, COMPLETED
+    private TaskStatus status = TaskStatus.PENDING; 
 
     @ManyToOne
     @JoinColumn(name = "project_id")
     private Project project;
 
-    @ManyToOne
-    @JoinColumn(name = "assigned_to")
-    private User assignedTo; // developer/tester
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assigned_to_id")
+    private User assignedTo;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by_id")  
     private User createdBy;
 
     private Date createdAt = new Date();
 
-    // ===== Getters & Setters =====
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
 
